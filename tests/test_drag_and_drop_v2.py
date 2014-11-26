@@ -1,3 +1,4 @@
+import os
 import logging
 import json
 import unittest
@@ -13,7 +14,10 @@ from nose.tools import (
     assert_in
 )
 
+from tests.utils import load_resource
+
 import drag_and_drop_v2
+
 
 
 # Silence too verbose Django logging
@@ -204,12 +208,10 @@ class TestDragAndDropHtmlData(BaseDragAndDropAjaxFixture, unittest.TestCase):
     FINAL_FEEDBACK = "Final <b>Feed</b>"
 
     def initial_data(self):
-        with open('tests/data/test_html_data.json') as f:
-            return json.load(f)
+        return json.loads(load_resource('data/test_html_data.json'))
 
     def get_data_response(self):
-        with open('tests/data/test_get_html_data.json') as f:
-            return json.load(f)
+        return json.loads(load_resource('data/test_get_html_data.json'))
 
 
 class TestDragAndDropPlainData(BaseDragAndDropAjaxFixture, unittest.TestCase):
@@ -225,12 +227,10 @@ class TestDragAndDropPlainData(BaseDragAndDropAjaxFixture, unittest.TestCase):
     FINAL_FEEDBACK = "Final Feed"
 
     def initial_data(self):
-        with open('tests/data/test_data.json') as f:
-            return json.load(f)
+        return json.loads(load_resource('data/test_data.json'))
 
     def get_data_response(self):
-        with open('tests/data/test_get_data.json') as f:
-            return json.load(f)
+        return json.loads(load_resource('data/test_get_data.json'))
 
 def test_ajax_solve_and_reset():
     block = make_block()
