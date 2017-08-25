@@ -562,8 +562,9 @@ function DragAndDropTemplates(configuration) {
                         itemFeedbackPopupTemplate(ctx),
                         h('div.target-img-wrapper', [
                             h('img.target-img', {src: ctx.target_img_src, alt: ctx.target_img_description}),
+                            renderCollection(zoneTemplate, ctx.zones, ctx)
                         ]),
-                        renderCollection(zoneTemplate, ctx.zones, ctx)
+                        // renderCollection(zoneTemplate, ctx.zones, ctx)
                     ]),
                 ]),
                 h("div.actions-toolbar", {attributes: {'role': 'group', 'aria-label': gettext('Actions')}}, [
@@ -1185,6 +1186,9 @@ function DragAndDropBlock(runtime, element, configuration) {
             // Make item draggable using the mouse
             try {
                 $item.draggable({
+                    appendTo: $root.find('.drag-container'),
+                    helper: 'clone',
+                    scroll: false,
                     addClasses: false,  // don't add ui-draggable-* classes as they don't play well with virtual DOM.
                     containment: $root.find('.drag-container'),
                     cursor: 'move',
