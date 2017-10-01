@@ -27,8 +27,6 @@ Expectation = namedtuple('Expectation', [
     'width_percent',  # we expect this item to have this width relative to its container (item bank or image target)
     'fixed_width_percent',  # we expect this item to have this width (always relative to the target image)
     'img_pixel_size_exact',  # we expect the image inside the draggable to have the exact size [w, h] in pixels
-    'width_percent_mobile',  # same as width_percent but for mobile. A range that covers both the square and wide image
-    'fixed_width_percent_mobile',  # same as fixed_width_percent but for mobile. Also a range like width_percent_mobile
 ])
 Expectation.__new__.__defaults__ = (None,) * len(Expectation._fields)  # pylint: disable=protected-access
 ZONE_33 = "Zone 1/3"  # Title of top zone in each image used in these tests (33% width)
@@ -86,19 +84,19 @@ class SizingTests(InteractionTestBase, BaseIntegrationTest):
         # The text 'Auto' with no fixed size specified should be 5-20% wide
         Expectation(item_id=0, zone_id=ZONE_33, width_percent=[5, AUTO_MAX_WIDTH]),
         # The long text with no fixed size specified should be wrapped at the maximum width
-        Expectation(item_id=1, zone_id=ZONE_33, width_percent=AUTO_MAX_WIDTH, width_percent_mobile=[6, 22]),
+        Expectation(item_id=1, zone_id=ZONE_33, width_percent=AUTO_MAX_WIDTH),
         # The text items that specify specific widths as a percentage of the background image:
-        Expectation(item_id=2, zone_id=ZONE_33, fixed_width_percent=33.3, fixed_width_percent_mobile=[7, 24]),
-        Expectation(item_id=3, zone_id=ZONE_50, fixed_width_percent=50, fixed_width_percent_mobile=[10, 36]),
-        Expectation(item_id=4, zone_id=ZONE_75, fixed_width_percent=75, fixed_width_percent_mobile=[15, 53]),
+        Expectation(item_id=2, zone_id=ZONE_33, fixed_width_percent=33.3),
+        Expectation(item_id=3, zone_id=ZONE_50, fixed_width_percent=50),
+        Expectation(item_id=4, zone_id=ZONE_75, fixed_width_percent=75),
         # A 400x300 image with automatic sizing should be constrained to the maximum width
-        Expectation(item_id=5, zone_id=ZONE_50, width_percent=AUTO_MAX_WIDTH, width_percent_mobile=[6, 22]),
+        Expectation(item_id=5, zone_id=ZONE_50, width_percent=AUTO_MAX_WIDTH),
         # A 200x200 image with automatic sizing
-        Expectation(item_id=6, zone_id=ZONE_50, width_percent=[25, 30.2], width_percent_mobile=[6, 22]),
+        Expectation(item_id=6, zone_id=ZONE_50, width_percent=[25, 30.2]),
         # A 400x300 image with a specified width of 50%
-        Expectation(item_id=7, zone_id=ZONE_50, fixed_width_percent=50, fixed_width_percent_mobile=[10, 36]),
+        Expectation(item_id=7, zone_id=ZONE_50, fixed_width_percent=50),
         # A 200x200 image with a specified width of 50%
-        Expectation(item_id=8, zone_id=ZONE_50, fixed_width_percent=50, fixed_width_percent_mobile=[10, 36]),
+        Expectation(item_id=8, zone_id=ZONE_50, fixed_width_percent=50),
         # A 60x60 auto-sized image should appear with pixel dimensions of 60x60 since it's
         # too small to be shrunk be the default max-size.
         Expectation(item_id=9, zone_id=ZONE_33, img_pixel_size_exact=[60, 60]),
@@ -132,12 +130,12 @@ class SizingTests(InteractionTestBase, BaseIntegrationTest):
     def test_wide_image_mobile(self):
         """ Test the upper, larger, wide image in a mobile-sized window """
         self._size_for_mobile()
-        self._check_sizes(0, self.EXPECTATIONS, expected_img_width=1600, is_desktop=False)
+        self._check_sizes(0, self.EXPECTATIONS, is_desktop=False)
 
     def test_square_image_mobile(self):
         """ Test the lower, smaller, square image in a mobile-sized window """
         self._size_for_mobile()
-        self._check_sizes(1, self.EXPECTATIONS, expected_img_width=500, is_desktop=False)
+        self._check_sizes(1, self.EXPECTATIONS, is_desktop=False)
 
     def _check_width(self, item_description, item, container_width, expected_percent):
         """
@@ -215,12 +213,12 @@ class SizingTests(InteractionTestBase, BaseIntegrationTest):
                     container_width=item_bank_width,
                     expected_percent=expect.width_percent,
                 )
-            if expect.fixed_width_percent is not None and expect.fixed_width_percent_mobile is not None:
+            if expect.fixed_width_percent is not None:
                 self._check_width(
                     item_description="Unplaced item {} with fixed width".format(expect.item_id),
                     item=self._get_unplaced_item_by_value(expect.item_id),
                     container_width=target_img_width,
-                    expected_percent=expect.fixed_width_percent if is_desktop else expect.fixed_width_percent_mobile,
+                    expected_percent=expect.fixed_width_percent,
                 )
             if expect.img_pixel_size_exact is not None:
                 self._check_img_pixel_dimensions(
@@ -233,13 +231,12 @@ class SizingTests(InteractionTestBase, BaseIntegrationTest):
         for expect in expectations:
             self.place_item(expect.item_id, expect.zone_id, action_key=Keys.RETURN)
             expected_width_percent = expect.fixed_width_percent or expect.width_percent
-            expected_width_percent_mobile = expect.fixed_width_percent_mobile or expect.width_percent_mobile
-            if expected_width_percent is not None and expected_width_percent_mobile is not None:
+            if expected_width_percent is not None:
                 self._check_width(
                     item_description="Placed item {}".format(expect.item_id),
                     item=self._get_placed_item_by_value(expect.item_id),
                     container_width=target_img_width,
-                    expected_percent=expected_width_percent if is_desktop else expected_width_percent_mobile,
+                    expected_percent=expected_width_percent,
                 )
             if expect.img_pixel_size_exact is not None:
                 self._check_img_pixel_dimensions(
