@@ -259,6 +259,11 @@
         max-width: none;
         width: auto;
     }
+
+    .xblock--drag-and-drop .target-img-wrapper {
+        display: inline-block;
+        position: relative;
+    }
 }
 
 .xblock--drag-and-drop .zone {
