@@ -16,9 +16,9 @@ from xblockutils.resources import ResourceLoader
 
 from xblockutils.base_test import SeleniumBaseTest
 
-from drag_and_drop_v2.utils import Constants
+from drag_and_drop_v2_new.utils import Constants
 
-from drag_and_drop_v2.default_data import (
+from drag_and_drop_v2_new.default_data import (
     DEFAULT_DATA, START_FEEDBACK, FINISH_FEEDBACK,
     TOP_ZONE_ID, TOP_ZONE_TITLE, MIDDLE_ZONE_ID, MIDDLE_ZONE_TITLE, BOTTOM_ZONE_ID, BOTTOM_ZONE_TITLE,
     ITEM_CORRECT_FEEDBACK, ITEM_INCORRECT_FEEDBACK, ITEM_ANY_ZONE_FEEDBACK, ITEM_NO_ZONE_FEEDBACK,
@@ -66,7 +66,7 @@ class BaseIntegrationTest(SeleniumBaseTest):
             data = json.dumps(DEFAULT_DATA)
         return """
             <vertical_demo>
-                <drag-and-drop-v2
+                <drag-and-drop-v2-new
                     display_name='{display_name}'
                     show_title='{show_title}'
                     question_text='{problem_text}'
@@ -91,7 +91,7 @@ class BaseIntegrationTest(SeleniumBaseTest):
 
     def _get_custom_scenario_xml(self, filename):
         data = loader.load_unicode(filename)
-        return "<vertical_demo><drag-and-drop-v2 data='{data}'/></vertical_demo>".format(
+        return "<vertical_demo><drag-and-drop-v2-new data='{data}'/></vertical_demo>".format(
             data=escape(data, self._additional_escapes)
         )
 
@@ -233,7 +233,7 @@ class DefaultDataTestMixin(object):
     }
 
     def _get_scenario_xml(self):  # pylint: disable=no-self-use
-        return "<vertical_demo><drag-and-drop-v2/></vertical_demo>"
+        return "<vertical_demo><drag-and-drop-v2-new/></vertical_demo>"
 
 
 class InteractionTestBase(object):

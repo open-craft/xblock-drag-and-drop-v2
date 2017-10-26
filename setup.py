@@ -22,10 +22,10 @@ def package_data(pkg, root_list):
 # Main ##############################################################
 
 setup(
-    name='xblock-drag-and-drop-v2',
+    name='xblock-drag-and-drop-v2-new',
     version='2.1.3',
     description='XBlock - Drag-and-Drop v2',
-    packages=['drag_and_drop_v2'],
+    packages=['drag_and_drop_v2_new'],
     install_requires=[
         'XBlock',
         'xblock-utils',
@@ -33,7 +33,7 @@ setup(
         'mock',
     ],
     entry_points={
-        'xblock.v1': 'drag-and-drop-v2 = drag_and_drop_v2:DragAndDropBlock',
+        'xblock.v1': 'drag-and-drop-v2-new = drag_and_drop_v2_new:DragAndDropBlock',
     },
-    package_data=package_data("drag_and_drop_v2", ["static", "templates", "public", "translations"]),
+    package_data=package_data("drag_and_drop_v2_new", ["static", "templates", "public", "translations"]),
 )

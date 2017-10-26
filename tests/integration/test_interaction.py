@@ -532,7 +532,7 @@ class MultipleBlocksDataInteraction(ParameterizedTestsMixin, InteractionTestBase
 
     def _get_scenario_xml(self):
         blocks_xml = "\n".join([
-            "<drag-and-drop-v2 data='{data}'/>".format(data=loader.load_unicode(filename))
+            "<drag-and-drop-v2-new data='{data}'/>".format(data=loader.load_unicode(filename))
             for filename in (self.BLOCK1_DATA_FILE, self.BLOCK2_DATA_FILE)
         ])
 

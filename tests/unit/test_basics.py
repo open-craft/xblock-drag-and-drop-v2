@@ -2,8 +2,8 @@ import ddt
 import unittest
 import random
 
-from drag_and_drop_v2.utils import Constants
-from drag_and_drop_v2.default_data import (
+from drag_and_drop_v2_new.utils import Constants
+from drag_and_drop_v2_new.default_data import (
     TARGET_IMG_DESCRIPTION, TOP_ZONE_ID, MIDDLE_ZONE_ID, BOTTOM_ZONE_ID,
     START_FEEDBACK, FINISH_FEEDBACK, DEFAULT_DATA
 )
@@ -63,7 +63,7 @@ class BasicTests(TestCaseMixin, unittest.TestCase):
             "weighted_max_score": 1,
             "display_zone_borders": False,
             "display_zone_labels": False,
-            "title": "Drag and Drop",
+            "title": "Drag and Drop Problem",
             "show_title": True,
             "problem_text": "",
             "max_items_per_zone": None,

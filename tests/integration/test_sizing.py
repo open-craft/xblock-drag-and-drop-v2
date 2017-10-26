@@ -80,11 +80,11 @@ class SizingTests(InteractionTestBase, BaseIntegrationTest):
             "img_200x200_url": _svg_to_data_uri('200x200.svg'),
             "img_60x60_url": _svg_to_data_uri('60x60.svg'),
         }
-        upper_block = "<drag-and-drop-v2 data='{data}'/>".format(
+        upper_block = "<drag-and-drop-v2-new data='{data}'/>".format(
             data=loader.render_django_template("data/test_sizing_template.json", params)
         )
         params["img"] = "square"
-        lower_block = "<drag-and-drop-v2 data='{data}'/>".format(
+        lower_block = "<drag-and-drop-v2-new data='{data}'/>".format(
             data=loader.render_django_template("data/test_sizing_template.json", params)
         )
 
@@ -345,7 +345,7 @@ class SizingBackwardsCompatibilityTests(InteractionTestBase, BaseIntegrationTest
         Set up the test scenario:
             * One DndDv2 block using 'old_version_data.json'
         """
-        dnd_block = "<drag-and-drop-v2 data='{data}'/>".format(
+        dnd_block = "<drag-and-drop-v2-new data='{data}'/>".format(
             data=loader.load_unicode("data/old_version_data.json")
         )
         return "<vertical_demo>{}</vertical_demo>".format(dnd_block)

@@ -6,7 +6,7 @@ class TestStudio(StudioEditableBaseTest):
     Tests that cover the editing interface in the Studio.
     """
 
-    def load_scenario(self, xml='<drag-and-drop-v2 url_name="defaults" />'):
+    def load_scenario(self, xml='<drag-and-drop-v2-new url_name="defaults" />'):
         self.set_scenario_xml(xml)
         self.element = self.go_to_view('studio_view')
         self.fix_js_environment()
@@ -113,7 +113,7 @@ class TestStudio(StudioEditableBaseTest):
         """"
         Verify user can provide a custom background image URL.
         """
-        default_bg_img_src = 'http://localhost:8081/resource/drag-and-drop-v2/public/img/triangle.png'
+        default_bg_img_src = 'http://localhost:8081/resource/drag-and-drop-v2-new/public/img/triangle.png'
         # In order to use a working image and avoid load errors, we use the default image with a custom
         # query string
         custom_bg_img_src = '{}?my-custom-image=true'.format(default_bg_img_src)
