@@ -13,11 +13,11 @@ from selenium.webdriver.common.keys import Keys
 
 from xblockutils.resources import ResourceLoader
 
-from drag_and_drop_v2.default_data import (
+from drag_and_drop_v2_new.default_data import (
     TOP_ZONE_ID, MIDDLE_ZONE_ID, BOTTOM_ZONE_ID,
     TOP_ZONE_TITLE, START_FEEDBACK, FINISH_FEEDBACK
 )
-from drag_and_drop_v2.utils import FeedbackMessages, Constants
+from drag_and_drop_v2_new.utils import FeedbackMessages, Constants
 from .test_base import BaseIntegrationTest
 from .test_interaction import (
     InteractionTestBase, DefaultDataTestMixin, ParameterizedTestsMixin, TestMaxItemsPerZone, ITEM_DRAG_KEYBOARD_KEYS
@@ -39,7 +39,7 @@ class DefaultAssessmentDataTestMixin(DefaultDataTestMixin):
 
     def _get_scenario_xml(self):  # pylint: disable=no-self-use
         return """
-            <vertical_demo><drag-and-drop-v2 mode='{mode}' max_attempts='{max_attempts}'/></vertical_demo>
+            <vertical_demo><drag-and-drop-v2-new mode='{mode}' max_attempts='{max_attempts}'/></vertical_demo>
         """.format(mode=Constants.ASSESSMENT_MODE, max_attempts=self.MAX_ATTEMPTS)
 
 
@@ -340,7 +340,7 @@ class AssessmentInteractionTest(
 
         submit_button = self._get_submit_button()
         self.assert_button_enabled(submit_button)  # precondition check
-        with patch('drag_and_drop_v2.DragAndDropBlock._drop_item_assessment', Mock(side_effect=delayed_drop_item)):
+        with patch('drag_and_drop_v2_new.DragAndDropBlock._drop_item_assessment', Mock(side_effect=delayed_drop_item)):
             item_id = 1
             self.place_item(item_id, MIDDLE_ZONE_ID, wait=False)
             # do not wait for XHR to complete

@@ -10,12 +10,12 @@ install:
     # Remove the next two lines after our test suite is compatible with selenium 3.
     - "pip uninstall -y selenium"
     - "pip install selenium==2.53.0"
-    - "pip uninstall -y xblock-drag-and-drop-v2"
+    - "pip uninstall -y xblock-drag-and-drop-v2-new"
     - "python setup.py sdist"
-    - "pip install dist/xblock-drag-and-drop-v2-2.1.3.tar.gz"
+    - "pip install dist/xblock-drag-and-drop-v2-new-*.tar.gz"
 script:
-    - pep8 drag_and_drop_v2 tests --max-line-length=120
-    - pylint drag_and_drop_v2
+    - pep8 drag_and_drop_v2_new tests --max-line-length=120
+    - pylint drag_and_drop_v2_new
     - pylint tests --rcfile=tests/pylintrc
     - python run_tests.py
 notifications:

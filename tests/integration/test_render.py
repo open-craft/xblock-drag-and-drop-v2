@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 
 from xblockutils.resources import ResourceLoader
 
-from drag_and_drop_v2.default_data import START_FEEDBACK
+from drag_and_drop_v2_new.default_data import START_FEEDBACK
 from .test_base import BaseIntegrationTest
 
 
@@ -52,7 +52,7 @@ class TestDragAndDropRender(BaseIntegrationTest):
         problem_data = problem_data.replace('{display_borders_value}', 'true' if zone_borders else 'false')
         scenario_xml = """
             <vertical_demo>
-                <drag-and-drop-v2 item_background_color='{item_background_color}'
+                <drag-and-drop-v2-new item_background_color='{item_background_color}'
                                   item_text_color='{item_text_color}'
                                   data='{problem_data}' />
             </vertical_demo>
@@ -261,7 +261,7 @@ class TestDragAndDropRender(BaseIntegrationTest):
         self.load_scenario()
 
         bg_image = self.browser.find_element_by_css_selector(".xblock--drag-and-drop .target-img")
-        image_path = '/resource/drag-and-drop-v2/public/img/triangle.png'
+        image_path = '/resource/drag-and-drop-v2-new/public/img/triangle.png'
         self.assertTrue(bg_image.get_attribute("src").endswith(image_path))
         self.assertEqual(bg_image.get_attribute("alt"), 'This describes the target image')
 

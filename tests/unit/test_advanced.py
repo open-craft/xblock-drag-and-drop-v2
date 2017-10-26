@@ -8,7 +8,7 @@ import unittest
 
 from xblockutils.resources import ResourceLoader
 
-from drag_and_drop_v2.utils import FeedbackMessages
+from drag_and_drop_v2_new.utils import FeedbackMessages
 
 from ..utils import make_block, TestCaseMixin, generate_max_and_attempts
 

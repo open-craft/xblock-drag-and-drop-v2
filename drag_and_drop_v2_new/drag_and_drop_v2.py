@@ -62,7 +62,7 @@ class DragAndDropBlock(
         display_name=_("Title"),
         help=_("The title of the drag and drop problem. The title is displayed to learners."),
         scope=Scope.settings,
-        default=_("Drag and Drop"),
+        default=_("Drag and Drop Problem"),
         enforce_type=True,
     )
 
@@ -1034,10 +1034,10 @@ class DragAndDropBlock(
         return [
             (
                 "Drag-and-drop-v2 standard",
-                "<vertical_demo><drag-and-drop-v2/></vertical_demo>"
+                "<vertical_demo><drag-and-drop-v2-new/></vertical_demo>"
             ),
             (
                 "Drag-and-drop-v2 assessment",
-                "<vertical_demo><drag-and-drop-v2 mode='assessment' max_attempts='3'/></vertical_demo>"
+                "<vertical_demo><drag-and-drop-v2-new mode='assessment' max_attempts='3'/></vertical_demo>"
             ),
         ]
