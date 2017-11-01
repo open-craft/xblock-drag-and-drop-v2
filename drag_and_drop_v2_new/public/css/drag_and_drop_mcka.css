@@ -1,5 +1,12 @@
 /* Temporary Overrides for McKinsey */
 /* These will soon be moved to an Open edX theme instead */
+/* Every rule in this file MUST include the selector ".themed-xblock" to avoid affecting the old drag and drop v2 */
+
+/* Bugfixes that we will merge into the upstream app soon: */
+.target-img-wrapper {
+    user-select: none;
+    -webkit-user-select: none;
+}
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Overrides that we want on Apros (desktop + mobile web) and native apps (webviews):
@@ -15,6 +22,24 @@
 /* Remove the grey background from disabled "reset" button */
 .themed-xblock.xblock--drag-and-drop .sidebar-buttons button:disabled {
     background-color: transparent;
+}
+
+/* Align the Reset button to the right on mobile (non-McKinsey version has it left on mobile, right on desktop) */
+.ltr .themed-xblock.xblock--drag-and-drop .actions-toolbar .action-toolbar-item.sidebar-buttons {
+    float: right;
+    padding-right: -5px;
+    padding-top: 5px;
+}
+.rtl .themed-xblock.xblock--drag-and-drop .actions-toolbar .action-toolbar-item.sidebar-buttons {
+    float: left;
+    padding-left: -5px;
+}
+
+@media screen and (max-width: 480px) {
+    /* Don't display "Keyboard Help" on mobile devices that don't have keyboards anyways */
+    .themed-xblock.xblock--drag-and-drop .keyboard-help-button {
+        display: none;
+    }
 }
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////
