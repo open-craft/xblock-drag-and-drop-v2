@@ -263,6 +263,7 @@ class DragAndDropBlock(
         fragment.add_content(loader.render_template('/templates/html/drag_and_drop.html'))
         css_urls = (
             'public/css/drag_and_drop.css',
+            'public/css/drag_and_drop_mcka.css',
         )
         js_urls = (
             'public/js/vendor/virtual-dom-1.3.0.min.js',
