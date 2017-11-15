@@ -3,9 +3,16 @@
 /* Every rule in this file MUST include the selector ".themed-xblock" to avoid affecting the old drag and drop v2 */
 
 /* Bugfixes that we will merge into the upstream app soon: */
-.target-img-wrapper {
-    user-select: none;
+.themed-xblock.xblock--drag-and-drop .drag-container,
+.themed-xblock.xblock--drag-and-drop .target-img-wrapper
+{
+    /* Disallow selection on mobile, which causes problematic menu popups during drag and drop*/
+    -webkit-touch-callout: none;
     -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
 }
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////
