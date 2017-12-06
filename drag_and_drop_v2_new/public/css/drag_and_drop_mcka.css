@@ -4,7 +4,8 @@
 
 /* Bugfixes that we will merge into the upstream app soon: */
 .themed-xblock.xblock--drag-and-drop .drag-container,
-.themed-xblock.xblock--drag-and-drop .target-img-wrapper
+.themed-xblock.xblock--drag-and-drop .target-img-wrapper,
+.themed-xblock.xblock--drag-and-drop .actions-toolbar
 {
     /* Disallow selection on mobile, which causes problematic menu popups during drag and drop*/
     -webkit-touch-callout: none;
