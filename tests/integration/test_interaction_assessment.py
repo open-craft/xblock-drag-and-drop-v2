@@ -5,19 +5,23 @@
 from ddt import ddt, data
 from mock import Mock, patch
 import time
+import re
 
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 
 from xblockutils.resources import ResourceLoader
 
-from drag_and_drop_v2.default_data import (
+from drag_and_drop_v2_new.default_data import (
     TOP_ZONE_ID, MIDDLE_ZONE_ID, BOTTOM_ZONE_ID,
     TOP_ZONE_TITLE, START_FEEDBACK, FINISH_FEEDBACK
 )
-from drag_and_drop_v2.utils import FeedbackMessages, Constants
+from drag_and_drop_v2_new.utils import FeedbackMessages, Constants
 from .test_base import BaseIntegrationTest
-from .test_interaction import InteractionTestBase, DefaultDataTestMixin, ParameterizedTestsMixin, TestMaxItemsPerZone
+from .test_interaction import (
+    InteractionTestBase, DefaultDataTestMixin, ParameterizedTestsMixin, TestMaxItemsPerZone, ITEM_DRAG_KEYBOARD_KEYS
+)
 
 
 # Globals ###########################################################
@@ -35,7 +39,7 @@ class DefaultAssessmentDataTestMixin(DefaultDataTestMixin):
 
     def _get_scenario_xml(self):  # pylint: disable=no-self-use
         return """
-            <vertical_demo><drag-and-drop-v2 mode='{mode}' max_attempts='{max_attempts}'/></vertical_demo>
+            <vertical_demo><drag-and-drop-v2-new mode='{mode}' max_attempts='{max_attempts}'/></vertical_demo>
         """.format(mode=Constants.ASSESSMENT_MODE, max_attempts=self.MAX_ATTEMPTS)
 
 
@@ -75,25 +79,23 @@ class AssessmentInteractionTest(
     All interactions are tested using mouse (action_key=None) and four different keyboard action keys.
     If default data changes this will break.
     """
-    @data(None, Keys.RETURN, Keys.SPACE, Keys.CONTROL+'m', Keys.COMMAND+'m')
+    @data(*ITEM_DRAG_KEYBOARD_KEYS)
     def test_item_no_feedback_on_good_move(self, action_key):
-        self.parameterized_item_positive_feedback_on_good_move(
-            self.items_map, action_key=action_key, assessment_mode=True
-        )
+        self.parameterized_item_positive_feedback_on_good_move_assessment(self.items_map, action_key=action_key)
 
-    @data(None, Keys.RETURN, Keys.SPACE, Keys.CONTROL+'m', Keys.COMMAND+'m')
+    @data(*ITEM_DRAG_KEYBOARD_KEYS)
     def test_item_no_feedback_on_bad_move(self, action_key):
-        self.parameterized_item_negative_feedback_on_bad_move(
-            self.items_map, self.all_zones, action_key=action_key, assessment_mode=True
+        self.parameterized_item_negative_feedback_on_bad_move_assessment(
+            self.items_map, self.all_zones, action_key=action_key
         )
 
-    @data(None, Keys.RETURN, Keys.SPACE, Keys.CONTROL+'m', Keys.COMMAND+'m')
+    @data(*ITEM_DRAG_KEYBOARD_KEYS)
     def test_move_items_between_zones(self, action_key):
         self.parameterized_move_items_between_zones(
             self.items_map, self.all_zones, action_key=action_key
         )
 
-    @data(None, Keys.RETURN, Keys.SPACE, Keys.CONTROL+'m', Keys.COMMAND+'m')
+    @data(*ITEM_DRAG_KEYBOARD_KEYS)
     def test_final_feedback_and_reset(self, action_key):
         self.parameterized_final_feedback_and_reset(
             self.items_map, self.feedback, action_key=action_key, assessment_mode=True
@@ -158,7 +160,7 @@ class AssessmentInteractionTest(
         # Incorrect item remains placed
         def _assert_placed(item_id, zone_title):
             item = self._get_placed_item_by_value(item_id)
-            item_description = item.find_element_by_css_selector('.sr')
+            item_description = item.find_element_by_css_selector('.sr.description')
             self.assertEqual(item_description.text, 'Placed in: {}'.format(zone_title))
 
         _assert_placed(1, TOP_ZONE_TITLE)
@@ -203,12 +205,13 @@ class AssessmentInteractionTest(
             self.assertEqual(item.get_attribute('class'), 'option fade')
 
             item_content = item.find_element_by_css_selector('.item-content')
-            item_description_id = '-item-{}-description'.format(item_definition.item_id)
-            self.assertEqual(item_content.get_attribute('aria-describedby'), item_description_id)
+            self.assertEqual(item_content.get_attribute('aria-describedby'), None)
 
-            describedby_text = (u'Press "Enter", "Space", "Ctrl-m", or "⌘-m" on an item to select it for dropping, '
-                                'then navigate to the zone you want to drop it on.')
-            self.assertEqual(item.find_element_by_css_selector('.sr').text, describedby_text)
+            try:
+                item.find_element_by_css_selector('.sr.description')
+                self.fail("Description element should not be present")
+            except NoSuchElementException:
+                pass
 
     def test_show_answer(self):
         """
@@ -245,32 +248,48 @@ class AssessmentInteractionTest(
         """
         Test updating overall feedback after submitting solution in assessment mode
         """
+        def check_feedback(overall_feedback_lines, per_item_feedback_lines=None):
+            # Check that the feedback is correctly displayed in the overall feedback area.
+            expected_overall_feedback = "\n".join(["FEEDBACK"] + overall_feedback_lines)
+            self.assertEqual(self._get_feedback().text, expected_overall_feedback)
+
+            # Check that the SR.readText function was passed correct feedback messages.
+            sr_feedback_lines = overall_feedback_lines
+            if per_item_feedback_lines:
+                sr_feedback_lines += ["Some of your answers were not correct.", "Hints:"]
+                sr_feedback_lines += per_item_feedback_lines
+            self.assert_reader_feedback_messages(sr_feedback_lines)
+
         # used keyboard mode to avoid bug/feature with selenium "selecting" everything instead of dragging an element
         self.place_item(0, TOP_ZONE_ID, Keys.RETURN)
 
         self.click_submit()
 
+        # There are five items total (4 items with zones and one decoy item).
+        # We place the first item into correct zone and left the decoy item in the bank,
+        # which means the current grade is 2/5.
+        expected_grade = 2.0 / 5.0
+
         feedback_lines = [
-            "FEEDBACK",
             FeedbackMessages.correctly_placed(1),
             FeedbackMessages.not_placed(3),
-            START_FEEDBACK
+            START_FEEDBACK,
+            FeedbackMessages.GRADE_FEEDBACK_TPL.format(score=expected_grade)
         ]
-        expected_feedback = "\n".join(feedback_lines)
-        self.assertEqual(self._get_feedback().text, expected_feedback)
+        check_feedback(feedback_lines)
 
+        # Place the item into incorrect zone. The score does not change.
         self.place_item(1, BOTTOM_ZONE_ID, Keys.RETURN)
         self.click_submit()
 
         feedback_lines = [
-            "FEEDBACK",
             FeedbackMessages.correctly_placed(1),
             FeedbackMessages.misplaced_returned(1),
             FeedbackMessages.not_placed(2),
-            START_FEEDBACK
+            START_FEEDBACK,
+            FeedbackMessages.GRADE_FEEDBACK_TPL.format(score=expected_grade)
         ]
-        expected_feedback = "\n".join(feedback_lines)
-        self.assertEqual(self._get_feedback().text, expected_feedback)
+        check_feedback(feedback_lines, ["No, this item does not belong here. Try again."])
 
         # reach final attempt
         for _ in xrange(self.MAX_ATTEMPTS-3):
@@ -281,14 +300,16 @@ class AssessmentInteractionTest(
         self.place_item(3, TOP_ZONE_ID, Keys.RETURN)
 
         self.click_submit()
+
+        # All items are correctly placed, so we get the full score (1.0).
+        expected_grade = 1.0
+
         feedback_lines = [
-            "FEEDBACK",
             FeedbackMessages.correctly_placed(4),
             FINISH_FEEDBACK,
-            FeedbackMessages.FINAL_ATTEMPT_TPL.format(score=1.0)
+            FeedbackMessages.FINAL_ATTEMPT_TPL.format(score=expected_grade)
         ]
-        expected_feedback = "\n".join(feedback_lines)
-        self.assertEqual(self._get_feedback().text, expected_feedback)
+        check_feedback(feedback_lines)
 
     def test_per_item_feedback_multiple_misplaced(self):
         self.place_item(0, MIDDLE_ZONE_ID, Keys.RETURN)
@@ -319,7 +340,7 @@ class AssessmentInteractionTest(
 
         submit_button = self._get_submit_button()
         self.assert_button_enabled(submit_button)  # precondition check
-        with patch('drag_and_drop_v2.DragAndDropBlock._drop_item_assessment', Mock(side_effect=delayed_drop_item)):
+        with patch('drag_and_drop_v2_new.DragAndDropBlock._drop_item_assessment', Mock(side_effect=delayed_drop_item)):
             item_id = 1
             self.place_item(item_id, MIDDLE_ZONE_ID, wait=False)
             # do not wait for XHR to complete
@@ -327,6 +348,34 @@ class AssessmentInteractionTest(
             self.wait_until_ondrop_xhr_finished(self._get_placed_item_by_value(item_id))
 
             self.assert_button_enabled(submit_button, enabled=True)
+
+    def test_grade_display(self):
+        progress = self._page.find_element_by_css_selector('.problem-progress')
+        self.assertEqual(progress.text, '1 point possible (ungraded)')
+
+        items_with_zones = self._get_items_with_zone(self.items_map).values()
+        items_without_zones = self._get_items_without_zone(self.items_map).values()
+        total_items = len(items_with_zones) + len(items_without_zones)
+
+        # Place items into correct zones one by one:
+        for idx, item in enumerate(items_with_zones):
+            self.place_item(item.item_id, item.zone_ids[0])
+            # The number of items in correct positions currently equals:
+            # the number of items already placed + any decoy items which should stay in the bank.
+            grade = (idx + 1 + len(items_without_zones)) / float(total_items)
+            formatted_grade = '{:.04f}'.format(grade)  # display 4 decimal places
+            formatted_grade = re.sub(r'\.?0+$', '', formatted_grade)  # remove trailing zeros
+            expected_progress = '{}/1 point (ungraded)'.format(formatted_grade)
+            # Selenium does not see the refreshed text unless the text is in view (wtf??), so scroll back up.
+            self.scroll_down(pixels=0)
+            # Grade does NOT change until we submit.
+            self.assertNotEqual(progress.text, expected_progress)
+            self.click_submit()
+            self.scroll_down(pixels=0)
+            self.assertEqual(progress.text, expected_progress)
+
+        # After placing all items, we get the full score.
+        self.assertEqual(progress.text, '1/1 point (ungraded)')
 
 
 class TestMaxItemsPerZoneAssessment(TestMaxItemsPerZone):

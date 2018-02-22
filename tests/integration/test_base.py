@@ -4,6 +4,7 @@
 
 import json
 from xml.sax.saxutils import escape
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,9 +16,9 @@ from xblockutils.resources import ResourceLoader
 
 from xblockutils.base_test import SeleniumBaseTest
 
-from drag_and_drop_v2.utils import Constants
+from drag_and_drop_v2_new.utils import Constants
 
-from drag_and_drop_v2.default_data import (
+from drag_and_drop_v2_new.default_data import (
     DEFAULT_DATA, START_FEEDBACK, FINISH_FEEDBACK,
     TOP_ZONE_ID, TOP_ZONE_TITLE, MIDDLE_ZONE_ID, MIDDLE_ZONE_TITLE, BOTTOM_ZONE_ID, BOTTOM_ZONE_TITLE,
     ITEM_CORRECT_FEEDBACK, ITEM_INCORRECT_FEEDBACK, ITEM_ANY_ZONE_FEEDBACK, ITEM_NO_ZONE_FEEDBACK,
@@ -47,7 +48,7 @@ ItemDefinition = namedtuple(  # pylint: disable=invalid-name
 
 
 class BaseIntegrationTest(SeleniumBaseTest):
-    default_css_selector = 'section.themed-xblock.xblock--drag-and-drop'
+    default_css_selector = '.themed-xblock.xblock--drag-and-drop'
     module_name = __name__
 
     _additional_escapes = {
@@ -65,7 +66,7 @@ class BaseIntegrationTest(SeleniumBaseTest):
             data = json.dumps(DEFAULT_DATA)
         return """
             <vertical_demo>
-                <drag-and-drop-v2
+                <drag-and-drop-v2-new
                     display_name='{display_name}'
                     show_title='{show_title}'
                     question_text='{problem_text}'
@@ -90,7 +91,7 @@ class BaseIntegrationTest(SeleniumBaseTest):
 
     def _get_custom_scenario_xml(self, filename):
         data = loader.load_unicode(filename)
-        return "<vertical_demo><drag-and-drop-v2 data='{data}'/></vertical_demo>".format(
+        return "<vertical_demo><drag-and-drop-v2-new data='{data}'/></vertical_demo>".format(
             data=escape(data, self._additional_escapes)
         )
 
@@ -123,6 +124,9 @@ class BaseIntegrationTest(SeleniumBaseTest):
     def _get_keyboard_help_dialog(self):
         return self._page.find_element_by_css_selector(".keyboard-help-dialog")
 
+    def _get_go_to_beginning_button(self):
+        return self._page.find_element_by_css_selector('.go-to-beginning-button')
+
     def _get_reset_button(self):
         return self._page.find_element_by_css_selector('.reset-button')
 
@@ -144,12 +148,42 @@ class BaseIntegrationTest(SeleniumBaseTest):
     def scroll_down(self, pixels=50):
         self.browser.execute_script("$(window).scrollTop({})".format(pixels))
 
+    def is_element_in_viewport(self, element):
+        """Determines if the element lies at least partially in the viewport."""
+        viewport = self.browser.execute_script(
+            "return {"
+            "top: window.scrollY,"
+            "left: window.scrollX,"
+            "bottom: window.scrollY + window.outerHeight,"
+            "right: window.scrollX + window.outerWidth"
+            "};"
+        )
+
+        return all([
+            any([
+                viewport["top"] <= element.rect["y"] <= viewport["bottom"],
+                viewport["top"] <= element.rect["y"] + element.rect["height"] <= viewport["bottom"]
+            ]),
+            any([
+                viewport["left"] <= element.rect["x"] <= viewport["right"],
+                viewport["left"] <= element.rect["x"] + element.rect["width"] <= viewport["right"]
+            ])
+        ])
+
     def _get_style(self, selector, style, computed=True):
         if computed:
             query = 'return getComputedStyle($("{selector}").get(0)).{style}'
         else:
             query = 'return $("{selector}").get(0).style.{style}'
         return self.browser.execute_script(query.format(selector=selector, style=style))
+
+    def assertFocused(self, element):
+        focused_element = self.browser.switch_to.active_element
+        self.assertTrue(element == focused_element, 'expected element to have focus')
+
+    def assertNotFocused(self, element):
+        focused_element = self.browser.switch_to.active_element
+        self.assertTrue(element != focused_element, 'expected element to not have focus')
 
     @staticmethod
     def get_element_html(element):
@@ -221,34 +255,11 @@ class DefaultDataTestMixin(object):
     }
 
     def _get_scenario_xml(self):  # pylint: disable=no-self-use
-        return "<vertical_demo><drag-and-drop-v2/></vertical_demo>"
+        return "<vertical_demo><drag-and-drop-v2-new/></vertical_demo>"
 
 
 class InteractionTestBase(object):
     POPUP_ERROR_CLASS = "popup-incorrect"
-
-    @classmethod
-    def _get_items_with_zone(cls, items_map):
-        return {
-            item_key: definition for item_key, definition in items_map.items()
-            if definition.zone_ids != []
-        }
-
-    @classmethod
-    def _get_items_without_zone(cls, items_map):
-        return {
-            item_key: definition for item_key, definition in items_map.items()
-            if definition.zone_ids == []
-        }
-
-    @classmethod
-    def _get_items_by_zone(cls, items_map):
-        zone_ids = set([definition.zone_ids[0] for _, definition in items_map.items() if definition.zone_ids])
-        return {
-            zone_id: {item_key: definition for item_key, definition in items_map.items()
-                      if definition.zone_ids and definition.zone_ids[0] is zone_id}
-            for zone_id in zone_ids
-        }
 
     def setUp(self):
         super(InteractionTestBase, self).setUp()
@@ -258,7 +269,42 @@ class InteractionTestBase(object):
         self._page = self.go_to_page(self.PAGE_TITLE)
         # Resize window so that the entire drag container is visible.
         # Selenium has issues when dragging to an area that is off screen.
-        self.browser.set_window_size(1024, 800)
+        self.browser.set_window_size(1024, 1024)
+
+    @staticmethod
+    def _get_items_with_zone(items_map):
+        return {
+            item_key: definition for item_key, definition in items_map.items()
+            if definition.zone_ids != []
+        }
+
+    @staticmethod
+    def _get_items_without_zone(items_map):
+        return {
+            item_key: definition for item_key, definition in items_map.items()
+            if definition.zone_ids == []
+        }
+
+    @staticmethod
+    def _get_items_by_zone(items_map):
+        zone_ids = set([definition.zone_ids[0] for _, definition in items_map.items() if definition.zone_ids])
+        return {
+            zone_id: {item_key: definition for item_key, definition in items_map.items()
+                      if definition.zone_ids and definition.zone_ids[0] is zone_id}
+            for zone_id in zone_ids
+        }
+
+    @staticmethod
+    def _get_incorrect_zone_for_item(item, zones):
+        """Returns the first zone that is not correct for this item."""
+        zone_id = None
+        zone_title = None
+        for z_id, z_title in zones:
+            if z_id not in item.zone_ids:
+                zone_id = z_id
+                zone_title = z_title
+                break
+        return [zone_id, zone_title]
 
     def _get_item_by_value(self, item_value):
         return self._page.find_elements_by_xpath(".//div[@data-value='{item_id}']".format(item_id=item_value))[0]
@@ -300,7 +346,7 @@ class InteractionTestBase(object):
         both the HTML attribute and the DOM property are set to false.
         We work around that selenium bug by using JavaScript to get the correct value of 'draggable'.
         """
-        script = "return $('div.option[data-value={}]').prop('draggable')".format(item_value)
+        script = "return $('.option[data-value={}]').prop('draggable')".format(item_value)
         return self.browser.execute_script(script)
 
     def assertDraggable(self, item_value):
@@ -358,7 +404,7 @@ class InteractionTestBase(object):
         item.send_keys("")
         item.send_keys(action_key)
         # Focus is on first *zone* now
-        self.assert_grabbed_item(item)
+        self.assert_item_grabbed(item)
         # Get desired zone and figure out how many times we have to press Tab to focus the zone.
         if zone_id is None:  # moving back to the bank
             zone = self._get_item_bank()
@@ -375,8 +421,11 @@ class InteractionTestBase(object):
             ActionChains(self.browser).send_keys(Keys.TAB).perform()
         zone.send_keys(action_key)
 
-    def assert_grabbed_item(self, item):
+    def assert_item_grabbed(self, item):
         self.assertEqual(item.get_attribute('aria-grabbed'), 'true')
+
+    def assert_item_not_grabbed(self, item):
+        self.assertEqual(item.get_attribute('aria-grabbed'), 'false')
 
     def assert_placed_item(self, item_value, zone_title, assessment_mode=False):
         item = self._get_placed_item_by_value(item_value)
@@ -384,7 +433,7 @@ class InteractionTestBase(object):
         self.wait_until_ondrop_xhr_finished(item)
         item_content = item.find_element_by_css_selector('.item-content')
         self.wait_until_visible(item_content)
-        item_description = item.find_element_by_css_selector('.sr')
+        item_description = item.find_element_by_css_selector('.sr.description')
         self.wait_until_visible(item_description)
         item_description_id = '-item-{}-description'.format(item_value)
 
@@ -421,12 +470,13 @@ class InteractionTestBase(object):
         self.assertEqual(item.get_attribute('class'), 'option')
         self.assertEqual(item.get_attribute('tabindex'), '0')
         self.assertEqual(item.get_attribute('aria-grabbed'), 'false')
-        item_description_id = '-item-{}-description'.format(item_value)
-        self.assertEqual(item_content.get_attribute('aria-describedby'), item_description_id)
+        self.assertEqual(item_content.get_attribute('aria-describedby'), None)
 
-        describedby_text = (u'Press "Enter", "Space", "Ctrl-m", or "⌘-m" on an item to select it for dropping, '
-                            'then navigate to the zone you want to drop it on.')
-        self.assertEqual(item.find_element_by_css_selector('.sr').text, describedby_text)
+        try:
+            item.find_element_by_css_selector('.sr.description')
+            self.fail("Description element exists")
+        except NoSuchElementException:
+            pass
 
     def place_decoy_items(self, items_map, action_key):
         decoy_items = self._get_items_without_zone(items_map)
@@ -461,3 +511,10 @@ class InteractionTestBase(object):
 
     def assert_button_enabled(self, submit_button, enabled=True):
         self.assertEqual(submit_button.is_enabled(), enabled)
+
+    def assert_reader_feedback_messages(self, expected_message_lines):
+        expected_paragraphs = ['<p>{}</p>'.format(l) for l in expected_message_lines]
+        expected_html = ''.join(expected_paragraphs)
+        feedback_area = self._page.find_element_by_css_selector('.reader-feedback-area')
+        actual_html = feedback_area.get_attribute('innerHTML')
+        self.assertEqual(actual_html, expected_html)

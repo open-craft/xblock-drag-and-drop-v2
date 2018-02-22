@@ -8,7 +8,7 @@ from workbench.runtime import WorkbenchRuntime
 from xblock.fields import ScopeIds
 from xblock.runtime import KvsFieldData, DictKeyValueStore
 
-import drag_and_drop_v2
+import drag_and_drop_v2_new
 
 
 def make_request(data, method='POST'):
@@ -22,14 +22,14 @@ def make_request(data, method='POST'):
 
 def make_block():
     """ Instantiate a DragAndDropBlock XBlock inside a WorkbenchRuntime """
-    block_type = 'drag_and_drop_v2'
+    block_type = 'drag_and_drop_v2_new'
     key_store = DictKeyValueStore()
     field_data = KvsFieldData(key_store)
     runtime = WorkbenchRuntime()
     def_id = runtime.id_generator.create_definition(block_type)
     usage_id = runtime.id_generator.create_usage(def_id)
     scope_ids = ScopeIds('user', block_type, def_id, usage_id)
-    return drag_and_drop_v2.DragAndDropBlock(runtime, field_data, scope_ids=scope_ids)
+    return drag_and_drop_v2_new.DragAndDropBlock(runtime, field_data, scope_ids=scope_ids)
 
 
 def generate_max_and_attempts(count=100):

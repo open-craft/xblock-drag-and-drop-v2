@@ -2,10 +2,11 @@
 
 from ddt import ddt, unpack, data
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.keys import Keys
 
 from xblockutils.resources import ResourceLoader
 
-from drag_and_drop_v2.default_data import START_FEEDBACK
+from drag_and_drop_v2_new.default_data import START_FEEDBACK
 from .test_base import BaseIntegrationTest
 
 
@@ -51,7 +52,7 @@ class TestDragAndDropRender(BaseIntegrationTest):
         problem_data = problem_data.replace('{display_borders_value}', 'true' if zone_borders else 'false')
         scenario_xml = """
             <vertical_demo>
-                <drag-and-drop-v2 item_background_color='{item_background_color}'
+                <drag-and-drop-v2-new item_background_color='{item_background_color}'
                                   item_text_color='{item_text_color}'
                                   data='{problem_data}' />
             </vertical_demo>
@@ -166,10 +167,7 @@ class TestDragAndDropRender(BaseIntegrationTest):
     def test_item_bank(self):
         self.load_scenario()
         item_bank = self._page.find_element_by_css_selector('.item-bank')
-        description = item_bank.find_element_by_css_selector('p.zone-description')
-        self.assertEqual(description.text, 'Item Bank')
-        # Description should only be visible to screen readers:
-        self.assertEqual(description.get_attribute('class'), 'zone-description sr')
+        self.assertEqual(item_bank.get_attribute("aria-label"), 'Item Bank')
 
     def test_zones(self):
         self.load_scenario()
@@ -190,13 +188,12 @@ class TestDragAndDropRender(BaseIntegrationTest):
             self.assertEqual(zone.get_attribute('aria-dropeffect'), 'move')
             self.assertEqual(zone.get_attribute('data-uid'), 'Zone {}'.format(zone_number))
             self.assertEqual(zone.get_attribute('data-zone_align'), 'center')
-            self.assertIn('ui-droppable', self.get_element_classes(zone))
             zone_box_percentages = box_percentages[index]
             self._assert_box_percentages(  # pylint: disable=star-args
                 '#-Zone_{}'.format(zone_number), **zone_box_percentages
             )
             zone_name = zone.find_element_by_css_selector('p.zone-name')
-            self.assertEqual(zone_name.text, 'Zone {}'.format(zone_number))
+            self.assertEqual(zone_name.text, 'Zone {}\n, dropzone'.format(zone_number))
             zone_description = zone.find_element_by_css_selector('p.zone-description')
             self.assertEqual(zone_description.text, 'This describes zone {}'.format(zone_number))
             # Zone description should only be visible to screen readers:
@@ -206,22 +203,49 @@ class TestDragAndDropRender(BaseIntegrationTest):
         self.load_scenario()
 
         popup = self._get_popup()
-        popup_wrapper = self._get_popup_wrapper()
         popup_content = self._get_popup_content()
         self.assertFalse(popup.is_displayed())
         self.assertIn('popup', popup.get_attribute('class'))
         self.assertEqual(popup_content.text, "")
-        self.assertEqual(popup_wrapper.get_attribute('aria-live'), 'polite')
+
+    @data(None, Keys.RETURN)
+    def test_go_to_beginning_button(self, action_key):
+        self.load_scenario()
+        self.scroll_down(250)
+
+        button = self._get_go_to_beginning_button()
+        # Button is only visible to screen reader users by default.
+        self.assertIn('sr', button.get_attribute('class').split())
+        # Set focus to the element. We have to use execute_script here because while TAB-ing
+        # to the button to make it the active element works in selenium, the focus event is not
+        # emitted unless the Firefox window controlled by selenium is the focused window, which
+        # usually is not the case when running integration tests.
+        # See: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/7346
+        self.browser.execute_script('$("button.go-to-beginning-button").focus()')
+
+        # For unknown reasons the element only becomes visible when focus() is called twice.
+        # See: https://openedx.atlassian.net/browse/TNL-6736
+        self.browser.execute_script('$("button.go-to-beginning-button").focus()')
+        self.assertFocused(button)
+        # Button should be visible when focused.
+        self.assertNotIn('sr', button.get_attribute('class').split())
+        # Click/activate the button to move focus to the top.
+        if action_key:
+            button.send_keys(action_key)
+        else:
+            button.click()
+        first_focusable_item = self._get_items()[0]
+        self.assertFocused(first_focusable_item)
+        # Button should only be visible to screen readers again.
+        self.assertIn('sr', button.get_attribute('class').split())
 
     def test_keyboard_help(self):
         self.load_scenario()
 
-        keyboard_help_button = self._get_keyboard_help_button()
         keyboard_help_dialog = self._get_keyboard_help_dialog()
         dialog_modal_overlay = keyboard_help_dialog.find_element_by_css_selector('.modal-window-overlay')
         dialog_modal = keyboard_help_dialog.find_element_by_css_selector('.modal-window')
 
-        self.assertEqual(keyboard_help_button.get_attribute('tabindex'), '0')
         self.assertFalse(dialog_modal_overlay.is_displayed())
         self.assertFalse(dialog_modal.is_displayed())
         self.assertEqual(dialog_modal.get_attribute('role'), 'dialog')
@@ -230,16 +254,14 @@ class TestDragAndDropRender(BaseIntegrationTest):
     def test_feedback(self):
         self.load_scenario()
 
-        feedback = self._get_feedback()
         feedback_message = self._get_feedback_message()
-        self.assertEqual(feedback.get_attribute('aria-live'), 'polite')
         self.assertEqual(feedback_message.text, START_FEEDBACK)
 
     def test_background_image(self):
         self.load_scenario()
 
         bg_image = self.browser.find_element_by_css_selector(".xblock--drag-and-drop .target-img")
-        image_path = '/resource/drag-and-drop-v2/public/img/triangle.png'
+        image_path = '/resource/drag-and-drop-v2-new/public/img/triangle.png'
         self.assertTrue(bg_image.get_attribute("src").endswith(image_path))
         self.assertEqual(bg_image.get_attribute("alt"), 'This describes the target image')
 

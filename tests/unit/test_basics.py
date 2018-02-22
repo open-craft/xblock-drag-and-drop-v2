@@ -1,8 +1,9 @@
 import ddt
 import unittest
+import random
 
-from drag_and_drop_v2.utils import Constants
-from drag_and_drop_v2.default_data import (
+from drag_and_drop_v2_new.utils import Constants
+from drag_and_drop_v2_new.default_data import (
     TARGET_IMG_DESCRIPTION, TOP_ZONE_ID, MIDDLE_ZONE_ID, BOTTOM_ZONE_ID,
     START_FEEDBACK, FINISH_FEEDBACK, DEFAULT_DATA
 )
@@ -44,7 +45,7 @@ class BasicTests(TestCaseMixin, unittest.TestCase):
     def test_template_contents(self):
         context = {}
         student_fragment = self.block.runtime.render(self.block, 'student_view', context)
-        self.assertIn('<section class="themed-xblock xblock--drag-and-drop">', student_fragment.content)
+        self.assertIn('<div class="themed-xblock xblock--drag-and-drop">', student_fragment.content)
         self.assertIn('Loading drag and drop problem.', student_fragment.content)
 
     def test_get_configuration(self):
@@ -58,9 +59,11 @@ class BasicTests(TestCaseMixin, unittest.TestCase):
         self.assertEqual(config, {
             "mode": Constants.STANDARD_MODE,
             "max_attempts": None,
+            "graded": False,
+            "weighted_max_score": 1,
             "display_zone_borders": False,
             "display_zone_labels": False,
-            "title": "Drag and Drop",
+            "title": "Drag and Drop Problem",
             "show_title": True,
             "problem_text": "",
             "max_items_per_zone": None,
@@ -86,13 +89,25 @@ class BasicTests(TestCaseMixin, unittest.TestCase):
             )
         ])
 
+    @ddt.data(*[random.randint(1, 50) for _ in xrange(5)])  # pylint: disable=star-args
+    def test_grading_interface(self, weight):
+        """
+        Test that the methods required by the LMS grading interface work as expected.
+        """
+        self.block.weight = weight
+        # Max score is different from weight and should always equal 1 for drag and drop problems.
+        # See: https://openedx.atlassian.net/wiki/display/TNL/Robust+Grades+Design
+        self.assertEqual(self.block.max_score(), 1)
+        self.assertTrue(self.block.has_score)
+
     def test_ajax_solve_and_reset(self):
         # Check assumptions / initial conditions:
         self.assertFalse(self.block.completed)
 
-        def assert_user_state_empty():
+        def assert_user_state_empty(grade=None):
             self.assertEqual(self.block.item_state, {})
             self.assertEqual(self.call_handler("get_user_state"), {
+                "grade": grade,
                 'items': {},
                 'finished': False,
                 "attempts": 0,
@@ -127,13 +142,14 @@ class BasicTests(TestCaseMixin, unittest.TestCase):
             },
             'finished': True,
             "attempts": 0,
+            "grade": 1,
             'overall_feedback': [{"message": FINISH_FEEDBACK, "message_class": None}],
         })
 
         # Reset to initial conditions
         self.call_handler('reset', {})
         self.assertTrue(self.block.completed)
-        assert_user_state_empty()
+        assert_user_state_empty(grade=1)  # resetting student state does not reset the grade
 
     def test_legacy_state_support(self):
         """
@@ -219,6 +235,17 @@ class BasicTests(TestCaseMixin, unittest.TestCase):
         self.assertEqual(res, {'result': 'success'})
 
         self.assertIsNone(self.block.max_items_per_zone)
+
+    def test_studio_submit_coerce_to_integer(self):
+        # Validate that numbers submitted as strings are being
+        # coerced to integers rather than being saved as strings
+        def modify_submission(submission):
+            submission['max_attempts'] = '1234567890'
+
+        body = self._make_submission(modify_submission)
+        self.call_handler('studio_submit', body)
+        self.assertEqual(self.block.max_attempts, 1234567890)
+        self.assertEqual(type(self.block.max_attempts), int)
 
     def test_expand_static_url(self):
         """ Test the expand_static_url handler needed in Studio when changing the image """

@@ -1,3 +1,46 @@
+Version 2.1.4 (2017-11-06)
+---------------------------
+
+* Make XBlock always emit `progress` event explicitly when it is marked as complete.  
+
+Version 2.1.3 (2017-10-05)
+---------------------------
+
+* Prevent target image from shrinking in mobile, and make it scrollable (PR #135)
+
+Version 2.1.2 (2017-10-02)
+---------------------------
+
+* Ability to generate zones and background image automatically (PR #136)
+
+Version 2.1.1 (2017-09-26)
+---------------------------
+
+* Enforce XBlock variable types (PR #104)
+* Improvements for mobile (PRs #132, #133, #134)
+
+Version 2.0.14 (2017-01-17)
+---------------------------
+
+* Various accessibility improvements (PRs #110, #111, #112)
+
+Version 2.0.13 (2017-01-02)
+---------------------------
+
+* i18n improvements (PR #113)
+
+Version 2.0.12 (2016-11-08)
+---------------------------
+
+* ([#108](https://github.com/edx-solutions/xblock-drag-and-drop-v2/pull/108)) Grading updates:
+    * [SOL-2030][sol-2030] Grade information is now displayed beneath the display name of the problem (similar to CAPA)
+    * [SOL-2094][sol-2094] Fixed problem preventing DnDv2 blocks from being scored or graded.
+    * Highest grade achieved is now displayed in feedback area
+    * Renamed "Maximum score" field to "Problem Weight" to be in line with CAPA problems and avoid confusion.
+    
+[sol-2030]: https://openedx.atlassian.net/browse/SOL-2030
+[sol-2094]: https://openedx.atlassian.net/browse/SOL-2094
+
 Version 2.0.11 (2016-10-03)
 ---------------------------
 
