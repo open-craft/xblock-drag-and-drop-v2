@@ -342,13 +342,15 @@ class DragAndDropBlock(
         # connect 'for' and 'aria-describedby' attributes to the associated elements.
         id_suffix = self._get_block_id()
         js_templates = js_templates.replace('{{id_suffix}}', id_suffix)
-        context = {
+        if context is None:
+            context = {}
+        context.update({
             'js_templates': js_templates,
             'id_suffix': id_suffix,
             'fields': self.fields,
             'self': self,
             'data': urllib.quote(json.dumps(self.data)),
-        }
+        })
 
         fragment = Fragment()
         fragment.add_content(loader.render_template('/templates/html/drag_and_drop_edit.html', context))
