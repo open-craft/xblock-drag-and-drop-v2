@@ -260,7 +260,8 @@ class DragAndDropBlock(
         """
 
         fragment = Fragment()
-        fragment.add_content(loader.render_template('/templates/html/drag_and_drop.html'))
+        fragment.add_content(loader.render_django_template('/templates/html/drag_and_drop.html',
+                                                           i18n_service=self.i18n_service))
         css_urls = (
             'public/css/drag_and_drop.css',
         )
@@ -342,19 +343,18 @@ class DragAndDropBlock(
         # connect 'for' and 'aria-describedby' attributes to the associated elements.
         id_suffix = self._get_block_id()
         js_templates = js_templates.replace('{{id_suffix}}', id_suffix)
-        if context is None:
-            context = {}
-        context.update({
+        context = {
             'js_templates': js_templates,
             'id_suffix': id_suffix,
             'fields': self.fields,
             'self': self,
             'data': urllib.quote(json.dumps(self.data)),
-        })
+        }
 
         fragment = Fragment()
-        fragment.add_content(loader.render_template('/templates/html/drag_and_drop_edit.html', context))
-
+        fragment.add_content(loader.render_django_template('/templates/html/drag_and_drop_edit.html',
+                                                           context=context,
+                                                           i18n_service=self.i18n_service))
         css_urls = (
             'public/css/drag_and_drop_edit.css',
         )
