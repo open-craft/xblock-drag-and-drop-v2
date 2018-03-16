@@ -334,15 +334,17 @@ class DragAndDropBlock(
         """
         Editing view in Studio
         """
-
-        js_templates = loader.load_unicode('/templates/html/js_templates.html')
         # Get an 'id_suffix' string that is unique for this block.
         # We append it to HTML element ID attributes to ensure multiple instances of the DnDv2 block
         # on the same page don't share the same ID value.
         # We avoid using ID attributes in preference to classes, but sometimes we still need IDs to
         # connect 'for' and 'aria-describedby' attributes to the associated elements.
         id_suffix = self._get_block_id()
-        js_templates = js_templates.replace('{{id_suffix}}', id_suffix)
+
+        # Render the JS templates as a Django template, to take advantage of translations.
+        js_templates = loader.render_django_template('/templates/html/js_templates.html',
+                                                     context={"id_suffix": id_suffix},
+                                                     i18n_service=self.i18n_service)
         context = {
             'js_templates': js_templates,
             'id_suffix': id_suffix,

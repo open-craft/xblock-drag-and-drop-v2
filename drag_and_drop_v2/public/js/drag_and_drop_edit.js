@@ -1,12 +1,4 @@
 function DragAndDropEditBlock(runtime, element, params) {
-
-    // Set up gettext in case it isn't available in the client runtime:
-    if (typeof gettext == "undefined") {
-        window.gettext = function gettext_stub(string) { return string; };
-    }
-
-    // Make gettext available in Handlebars templates
-    Handlebars.registerHelper('i18n', function(str) { return gettext(str); });
     // Numeric rounding in Handlebars templates
     Handlebars.registerHelper('singleDecimalFloat', function(value) {
         if (value === "" || isNaN(Number(value))) {
