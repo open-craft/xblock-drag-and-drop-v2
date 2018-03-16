@@ -716,6 +716,7 @@ function DragAndDropBlock(runtime, element, configuration) {
     var renderView = DragAndDropTemplates(configuration);
 
     var $element = $(element);
+    element = $element[0];  // Works around this Studio bug: https://github.com/edx/edx-platform/pull/11433
 
     // root: root node managed by the virtual DOM
     var $root = $element.find('.xblock--drag-and-drop');
