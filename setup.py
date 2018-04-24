@@ -25,15 +25,11 @@ setup(
     name='xblock-drag-and-drop-v2-new',
     version='2.1.3',
     description='XBlock - Drag-and-Drop v2',
-    packages=['drag_and_drop_v2_new'],
+    packages=[],
     install_requires=[
-        'XBlock',
-        'xblock-utils',
-        'ddt',
-        'mock',
+        'xblock-drag-and-drop-v2',
     ],
     entry_points={
-        'xblock.v1': 'drag-and-drop-v2-new = drag_and_drop_v2_new:DragAndDropBlock',
+        'xblock.v1': 'drag-and-drop-v2-new = drag_and_drop_v2:DragAndDropBlock',
     },
-    package_data=package_data("drag_and_drop_v2_new", ["static", "templates", "public", "translations"]),
 )
