@@ -1044,3 +1044,17 @@ class DragAndDropBlock(
                 "<vertical_demo><drag-and-drop-v2 mode='assessment' max_attempts='3'/></vertical_demo>"
             ),
         ]
+
+    def generate_report_data(self, user_state_iterator):
+        """
+        Generate human-readable data for use in an LMS's Student Response Report
+        """
+        print("\n\ngenerate_report_data for dndv2 with ID {}".format(self.scope_ids.usage_id))
+        print(self.question_text)  # We can access Scope.settings fields
+        # note that we can't directly access self.item_state here, since it's a
+        # Scope.user_state field and this block isn't currently bound to any user
+        # Instead we access state for all users via user_state_iterator:
+        print("User state data:")
+        for user_state in user_state_iterator:
+            print("    -> user {} has arranged the items in state {}".format(user_state.username, user_state.state.get('item_state')))
+        print("\n")
