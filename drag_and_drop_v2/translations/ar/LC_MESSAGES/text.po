@@ -574,24 +574,24 @@ msgstr[5] "{earned}\\{possible} ﻦﻘﻃﺓ (ﺏﺩﻮﻧ ﻉﻼﻣﺓ)"
 #: public/js/drag_and_drop.js:468
 msgid "{possible} point possible (graded)"
 msgid_plural "{possible} points possible (graded)"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "{possible}  نقاط محتملة (مقيمة)"
+msgstr[1] "{possible}  نقاط محتملة (مقيمة)"
+msgstr[2] "{possible}  نقاط محتملة (مقيمة)"
+msgstr[3] "{possible}  نقاط محتملة (مقيمة)"
+msgstr[4] "{possible}  نقاط محتملة (مقيمة)"
+msgstr[5] "{possible} عدد النقاط الممكنة (مع علامة)"
 
 # Translators: {possible} is the number of points possible (examples: 1, 3,
 # 10).
 #: public/js/drag_and_drop.js:474
 msgid "{possible} point possible (ungraded)"
 msgid_plural "{possible} points possible (ungraded)"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "{possible}  نقاط محتملة (غير مقيمة)"
+msgstr[1] "{possible}  نقاط محتملة (غير مقيمة)"
+msgstr[2] "{possible}  نقاط محتملة (غير مقيمة)"
+msgstr[3] "{possible}  نقاط محتملة (غير مقيمة)"
+msgstr[4] "{possible}  نقاط محتملة (غير مقيمة)"
+msgstr[5] "{possible} عدد النقاط الممكنة (دون علامة)"
 
 #: utils.py:44
 msgid "Your highest score is {score}"
