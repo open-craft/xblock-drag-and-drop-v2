@@ -446,7 +446,7 @@ function DragAndDropTemplates(configuration) {
 
         if (ctx.mode == DragAndDropBlock.ASSESSMENT_MODE) {
             var content_items = [
-                (!ctx.last_action_correct) ? h("p", {}, gettext("Some of your answers were not correct.")) : null,
+                (!ctx.last_action_correct) ? h("p", {}, gettext("Some of your answers were pfff.")) : null,
                 h("p", {}, gettext("Hints:")),
                 h("ul", {}, msgs.map(function(message) {
                     return h("li", {innerHTML: gettext(message.message)});
