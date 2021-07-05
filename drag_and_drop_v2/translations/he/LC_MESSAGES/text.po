@@ -469,7 +469,7 @@ msgstr "שלח"
 
 #: public/js/drag_and_drop.js
 msgid "Feedback"
-msgstr "משוב"
+msgstr "משובים"
 
 #: public/js/drag_and_drop.js
 msgid "Keyboard Help"
@@ -515,7 +515,7 @@ msgstr "אירעה שגיאה. לא ניתן להעלות בעיית גרירה 
 
 #: public/js/drag_and_drop.js
 msgid "You have used {used} of {total} attempts."
-msgstr "השתמשת ב-{used} מתוך {total} ניסיונות."
+msgstr "השתמשתם בניסיון {used} מתוך {total}"
 
 #: public/js/drag_and_drop.js
 msgid "Some of your answers were not correct."
@@ -555,7 +555,7 @@ msgstr[1] ""
 msgid "{earned}/{possible} point (ungraded)"
 msgid_plural "{earned}/{possible} points (ungraded)"
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "נקודות (ללא ציון) {earned}/{possible}"
 
 # Translators: {possible} is the number of points possible (examples: 1, 3,
 # 10).
@@ -563,7 +563,7 @@ msgstr[1] ""
 msgid "{possible} point possible (graded)"
 msgid_plural "{possible} points possible (graded)"
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "{possible} נקודות אפשריות (ללא ציון)"
 
 # Translators: {possible} is the number of points possible (examples: 1, 3,
 # 10).
@@ -575,7 +575,7 @@ msgstr[1] ""
 
 #: utils.py:44
 msgid "Your highest score is {score}"
-msgstr ""
+msgstr "ציונך הגבוה ביותר הוא {score}"
 
 #: utils.py:45
 msgid "Final attempt was used, highest score is {score}"
@@ -607,3 +607,8 @@ msgid "Did not place {missing_count} required item."
 msgid_plural "Did not place {missing_count} required items."
 msgstr[0] "לא הניח פריט דרוש {missing_count}."
 msgstr[1] "לא הניח {missing_count} פריטים דרושים."
+
+#: drag_and_drop_v2/public/js/drag_and_drop.js:374
+#: drag_and_drop_v2/public/js/drag_and_drop.js:839
+msgid "Hints:"
+msgstr "רמזים:"
