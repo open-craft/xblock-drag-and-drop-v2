@@ -607,7 +607,7 @@ function DragAndDropTemplates(configuration) {
         var problemTitle = null;
         if (ctx.show_title) {
             var problem_title_id = configuration.url_name + '-problem-title';
-            problemTitle = h('h3.problem-title', {
+            problemTitle = h('h3.hd.hd-3.problem-header', {
                 id: problem_title_id,
                 innerHTML: gettext(ctx.title_html),
                 attributes: {'aria-describedby': problemProgress.properties.id}
