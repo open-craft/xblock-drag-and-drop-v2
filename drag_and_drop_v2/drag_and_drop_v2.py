@@ -739,15 +739,7 @@ class DragAndDropBlock(
             _add_msg_if_exists(misplaced_ids, misplaced_template, FeedbackMessages.MessageClasses.MISPLACED)
             _add_msg_if_exists(missing_ids, FeedbackMessages.not_placed, FeedbackMessages.MessageClasses.NOT_PLACED)
 
-        if self.attempts_remain and (misplaced_ids or missing_ids):
-            problem_feedback_message = self.data['feedback']['start']
-        else:
-            problem_feedback_message = self.data['feedback']['finish']
-
-        problem_feedback_class = self.PROBLEM_FEEDBACK_CLASSES.get(answer_correctness, None)
         grade_feedback_class = self.GRADE_FEEDBACK_CLASSES.get(answer_correctness, None)
-
-        feedback_msgs.append(FeedbackMessage(problem_feedback_message, problem_feedback_class))
 
         if self.weight > 0:
             if self.attempts_remain:
@@ -759,6 +751,16 @@ class DragAndDropBlock(
                 self.i18n_service.gettext(grade_feedback_template).format(score=self.weighted_grade()),
                 grade_feedback_class)
             )
+
+        problem_feedback_class = None
+
+        if self.attempts_remain and (misplaced_ids or missing_ids):
+            problem_feedback_message = self.data['feedback']['start']
+        else:
+            problem_feedback_message = self.data['feedback']['finish']
+            problem_feedback_class = 'finish'
+
+        feedback_msgs.append(FeedbackMessage(problem_feedback_message, problem_feedback_class))
 
         return feedback_msgs, misplaced_ids
 

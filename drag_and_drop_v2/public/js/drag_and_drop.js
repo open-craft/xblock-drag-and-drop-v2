@@ -452,13 +452,28 @@ function DragAndDropTemplates(configuration) {
         }
 
         if (ctx.mode == DragAndDropBlock.ASSESSMENT_MODE) {
-            var content_items = [
-                (!ctx.last_action_correct) ? h("p", {}, gettext("Some of your answers were not correct.")) : null,
-                h("p", {}, gettext("Hints:")),
-                h("ul", {}, msgs.map(function(message) {
-                    return h("li", {innerHTML: gettext(message.message)});
-                }))
-            ];
+            var content_items;
+            var limit_popup = msgs.reduce(
+                (previous, actualMessage) => previous || actualMessage.message_class,
+                false
+            );
+
+            if (limit_popup) {
+                content_items = [
+                    msgs.map(function(message) {
+                        return h("p", {innerHTML: gettext(message.message)});
+                    })
+                ];
+            } else {
+                content_items = [
+                    (!ctx.last_action_correct) ? h("p", {}, gettext("Some of your answers were not correct.")) : null,
+                    h("p.hints", {}, gettext("Hints:")),
+                    h("ul", {}, msgs.map(function(message) {
+                        return h("li", {innerHTML: gettext(message.message)});
+                    }))
+                ];
+            }
+
             popup_content = h(
                 ctx.last_action_correct ? "div.popup-content" : "div.popup-content.popup-content-incorrect",
                 {},
@@ -524,23 +539,7 @@ function DragAndDropTemplates(configuration) {
                     {},
                     ctx.last_action_correct ? gettext("Correct") : gettext("Incorrect")
                 ),
-                popup_content,
-                h(
-                    'div',
-                    [
-                        h(
-                            'button.unbutton.close-feedback-popup-button.close-feedback-popup-mobile-button',
-                            {},
-                            [
-                                h(
-                                    'span',
-                                    {},
-                                    gettext("Close")
-                                )
-                            ]
-                        )
-                    ]
-                )
+                popup_content
             ]
         )
     };
@@ -692,9 +691,9 @@ function DragAndDropTemplates(configuration) {
                     problemHeader,
                     h('p', {innerHTML: ctx.problem_html}),
                     h('div.drag-container', {style: drag_container_style}, [
-                        h('div.item-bank', item_bank_properties, bank_children),
+                        itemFeedbackPopupTemplate(ctx),h('div.item-bank', item_bank_properties, bank_children),
                         h('div.target', {attributes: {'role': 'group', 'arial-label': gettext('Drop Targets')}}, [
-                            itemFeedbackPopupTemplate(ctx),
+
                             h('div.target-img-wrapper', [
                                 h('img.target-img', {
                                     src: ctx.target_img_src,
@@ -1317,7 +1316,7 @@ function DragAndDropBlock(runtime, element, configuration) {
         var items_in_zone_count = countItemsInZone(zone, [item_id.toString()]);
         if (configuration.max_items_per_zone && configuration.max_items_per_zone <= items_in_zone_count) {
             state.last_action_correct = false;
-            state.feedback = [{message: gettext("You cannot add any more items to this zone."), message_class: null}];
+            state.feedback = [{message: gettext("You cannot add any more items to this zone."), message_class: "limit"}];
             applyState();
             return;
         }
