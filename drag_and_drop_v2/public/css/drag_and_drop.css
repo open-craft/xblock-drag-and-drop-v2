@@ -305,6 +305,7 @@
     .xblock--drag-and-drop .target-img-wrapper {
         display: inline-block;
         position: relative;
+        width: max-content;
     }
 }
 
