@@ -478,6 +478,7 @@
 }
 
 .xblock--drag-and-drop .popup.popup-incorrect .hints + ul {
+    padding-left: 0;
     list-style: inside;
 }
 
