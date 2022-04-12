@@ -340,7 +340,11 @@
 }
 
 
-.xblock--drag-and-drop .zone-border {
+.xblock--drag-and-drop .item-bank.zone-border {
+    border: 1px solid #000000;;
+}
+
+.xblock--drag-and-drop .zone.zone-border {
     border: 4px solid #000000;;
 }
 
