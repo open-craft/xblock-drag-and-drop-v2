@@ -61,7 +61,7 @@ Version 3.2.0 (2023-04-20)
 
 * Use the `replace_urls` service instead of a runtime property.
 
-  BREAKING CHANGE: This version is no longer compatible with Maple. 
+  BREAKING CHANGE: This version is no longer compatible with Maple.
 
 Version 3.1.3 (2023-04-15)
 --------------------------
